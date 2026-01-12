@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FortniteReplayAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+03550bb4b965f772dbe1320e3d7a7c0ae9f8aedf")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+24fa7ec3f8aa07e7715b573ce48c30812ff6a810")]
 [assembly: System.Reflection.AssemblyProductAttribute("FortniteReplayAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FortniteReplayAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
