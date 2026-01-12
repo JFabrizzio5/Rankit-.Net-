@@ -1,0 +1,6 @@
+@FortniteReplayAPI_HostAddress = http://localhost:5138
+
+GET {{FortniteReplayAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
