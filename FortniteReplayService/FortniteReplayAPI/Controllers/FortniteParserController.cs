@@ -18,156 +18,20 @@ namespace FortniteReplayAPI.Controllers
         }
 
         /// <summary>
-        /// Sube un archivo .replay y calcula la tabla de posiciones según las reglas JSON enviadas.
+        /// Analiza una sola partida.
         /// </summary>
-        /// <param name="file">El archivo .replay de Fortnite.</param>
-        /// <param name="rulesJson">
-        /// Cadena JSON con las reglas. 
-        /// Ejemplo: { "pointsPerKill": 2, "thresholds": [{"thresholdRank": 1, "points": 10}], "ranges": [{"startRank": 50, "endRank": 1, "pointsPerStep": 1}] }
-        /// </param>
-        /// <returns>Lista de resultados ordenados.</returns>
         [HttpPost("analyze")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Analyze(
             [Required] IFormFile file,
-            [FromForm] string? rulesJson)
+            [FromForm] GameMode mode = GameMode.Solos, // 1=Solos, 2=Duos, 3=Trios, 4=Squads
+            [FromForm] string? rulesJson = null)
         {
-            // Validaciones iniciales
-            if (file == null || file.Length == 0)
-            {
-                return BadRequest(new { error = "No se ha subido ningún archivo." });
-            }
+            if (file == null || !file.FileName.EndsWith(".replay", StringComparison.OrdinalIgnoreCase))
+                return BadRequest(new { error = "Archivo inválido. Debe ser .replay" });
 
-            if (!Path.GetExtension(file.FileName).Equals(".replay", StringComparison.OrdinalIgnoreCase))
-            {
-                return BadRequest(new { error = "El archivo debe tener extensión .replay" });
-            }
+            ScoringRules rules = GetRules(rulesJson, mode);
 
-            // Parsear reglas
-            ScoringRules rules = ParseRules(rulesJson);
-            if (rules == null) return BadRequest(new { error = "El formato JSON de 'rulesJson' es inválido." });
-
-            // Procesar un solo archivo
-            try
-            {
-                var result = await ProcessSingleReplay(file, rules);
-                return Ok(new
-                {
-                    FileName = file.FileName,
-                    ProcessedAt = DateTime.UtcNow,
-                    TotalPlayers = result.Count,
-                    Leaderboard = result.Take(100)
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = $"Error interno: {ex.Message}" });
-            }
-        }
-
-        /// <summary>
-        /// Sube MÚLTIPLES archivos .replay y genera una Tabla Global acumulada (Torneo).
-        /// </summary>
-        /// <param name="files">Lista de archivos .replay.</param>
-        /// <param name="rulesJson">Reglas de puntuación aplicables a TODAS las partidas.</param>
-        /// <returns>Ranking global acumulado.</returns>
-        [HttpPost("analyze-tournament")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> AnalyzeTournament(
-            [Required] List<IFormFile> files,
-            [FromForm] string? rulesJson)
-        {
-            if (files == null || files.Count == 0)
-                return BadRequest(new { error = "No se han subido archivos." });
-
-            // 1. Parsear reglas una sola vez para todas las partidas
-            ScoringRules rules = ParseRules(rulesJson);
-            if (rules == null) return BadRequest(new { error = "JSON de reglas inválido." });
-
-            var globalStats = new Dictionary<string, TournamentPlayerStats>();
-            var matchSummaries = new List<object>();
-
-            // 2. Iterar sobre cada archivo subido
-            foreach (var file in files)
-            {
-                if (!Path.GetExtension(file.FileName).Equals(".replay", StringComparison.OrdinalIgnoreCase))
-                    continue; // Saltar archivos que no sean replay
-
-                try
-                {
-                    // Procesar partida individual
-                    var matchResults = await ProcessSingleReplay(file, rules);
-
-                    // Guardar resumen breve de esta partida
-                    matchSummaries.Add(new 
-                    { 
-                        FileName = file.FileName, 
-                        PlayerCount = matchResults.Count 
-                    });
-
-                    // 3. ACUMULAR PUNTOS (Lógica de Torneo)
-                    foreach (var player in matchResults)
-                    {
-                        // Usamos el ID (EpicID) como clave única. Si es bot o desconocido, usamos el nombre.
-                        string key = !string.IsNullOrEmpty(player.Id) ? player.Id : player.PlayerName;
-
-                        if (!globalStats.ContainsKey(key))
-                        {
-                            globalStats[key] = new TournamentPlayerStats
-                            {
-                                PlayerName = player.PlayerName,
-                                IsBot = player.IsBot
-                            };
-                        }
-
-                        var stats = globalStats[key];
-                        stats.TotalKills += player.Kills;
-                        stats.TotalPoints += player.TotalPoints;
-                        stats.MatchesPlayed++;
-                        stats.Placements.Add(player.Rank);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Si falla una replay, la registramos pero seguimos con las demás
-                    matchSummaries.Add(new { FileName = file.FileName, Error = ex.Message });
-                }
-            }
-
-            // 4. Ordenar Tabla Global
-            var leaderboard = globalStats.Values
-                .OrderByDescending(p => p.TotalPoints)
-                .ThenByDescending(p => p.TotalKills)
-                .ThenBy(p => p.AveragePlacement)
-                .ToList();
-
-            return Ok(new
-            {
-                TournamentProcessedAt = DateTime.UtcNow,
-                TotalMatches = files.Count,
-                MatchesDetails = matchSummaries,
-                GlobalLeaderboard = leaderboard
-            });
-        }
-
-        // --- Helpers Privados ---
-
-        private ScoringRules ParseRules(string? json)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(json)) return new ScoringRules();
-                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                return JsonSerializer.Deserialize<ScoringRules>(json, options) ?? new ScoringRules();
-            }
-            catch
-            {
-                return null!;
-            }
-        }
-
-        private async Task<List<MatchResult>> ProcessSingleReplay(IFormFile file, ScoringRules rules)
-        {
             var tempPath = Path.GetTempFileName();
             try
             {
@@ -175,7 +39,13 @@ namespace FortniteReplayAPI.Controllers
                 {
                     await file.CopyToAsync(stream);
                 }
-                return _service.ProcessReplay(tempPath, rules);
+
+                var result = _service.ProcessReplay(tempPath, rules, mode);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = $"Error procesando replay: {ex.Message}" });
             }
             finally
             {
@@ -183,17 +53,153 @@ namespace FortniteReplayAPI.Controllers
             }
         }
 
-        // Clase interna para llevar el conteo del torneo
-        private class TournamentPlayerStats
+        /// <summary>
+        /// Analiza un torneo completo (múltiples partidas).
+        /// </summary>
+        [HttpPost("analyze-tournament")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> AnalyzeTournament(
+            [Required] List<IFormFile> files,
+            [FromForm] GameMode mode = GameMode.Solos,
+            [FromForm] string? rulesJson = null)
         {
-            public string PlayerName { get; set; } = "";
-            public bool IsBot { get; set; }
-            public int TotalPoints { get; set; }
-            public int TotalKills { get; set; }
-            public int MatchesPlayed { get; set; }
-            public List<int> Placements { get; set; } = new List<int>();
+            if (files == null || files.Count == 0) 
+                return BadRequest(new { error = "No se han subido archivos." });
+
+            var rules = GetRules(rulesJson, mode);
             
-            public double AveragePlacement => Placements.Count > 0 ? Math.Round(Placements.Average(), 1) : 0;
+            // Estructuras para acumular datos
+            var globalTeams = new Dictionary<string, TournamentTeamStats>();
+            var globalPlayers = new Dictionary<string, TournamentPlayerStats>();
+            var matchSummaries = new List<object>();
+
+            foreach (var file in files)
+            {
+                if (!file.FileName.EndsWith(".replay", StringComparison.OrdinalIgnoreCase)) continue;
+
+                var tempPath = Path.GetTempFileName();
+                try 
+                {
+                    using (var stream = new FileStream(tempPath, FileMode.Create)) await file.CopyToAsync(stream);
+                    
+                    // Procesar partida individual
+                    var matchData = _service.ProcessReplay(tempPath, rules, mode);
+                    
+                    matchSummaries.Add(new 
+                    { 
+                        File = file.FileName, 
+                        Teams = matchData.TotalTeams, 
+                        Players = matchData.TotalPlayers 
+                    });
+
+                    // 1. Acumular Individuales
+                    foreach(var p in matchData.PlayerLeaderboard)
+                    {
+                        // Usar EpicId como clave
+                        if(!globalPlayers.ContainsKey(p.Id)) 
+                            globalPlayers[p.Id] = new TournamentPlayerStats { Name = p.PlayerName };
+                        
+                        var stat = globalPlayers[p.Id];
+                        stat.TotalKills += p.Kills;
+                        stat.TotalPoints += p.TotalPoints;
+                        stat.MatchesPlayed++;
+                        stat.Wins += (p.Rank == 1 ? 1 : 0);
+                    }
+
+                    // 2. Acumular Equipos
+                    // Como el TeamId cambia entre partidas, usamos los NOMBRES de los miembros como clave única.
+                    foreach(var t in matchData.TeamLeaderboard)
+                    {
+                        // Normalizamos la clave: Nombres ordenados alfabéticamente y unidos
+                        t.MemberNames.Sort();
+                        string teamKey = string.Join(" | ", t.MemberNames);
+
+                        if(!globalTeams.ContainsKey(teamKey)) 
+                            globalTeams[teamKey] = new TournamentTeamStats { MemberNames = t.MemberNames };
+
+                        var tStat = globalTeams[teamKey];
+                        tStat.TotalPoints += t.TotalPoints;
+                        tStat.TotalKills += t.TotalKills;
+                        tStat.MatchesPlayed++;
+                        tStat.Wins += (t.Rank == 1 ? 1 : 0);
+                    }
+                }
+                catch(Exception ex)
+                {
+                    matchSummaries.Add(new { File = file.FileName, Error = ex.Message });
+                }
+                finally 
+                { 
+                    if (System.IO.File.Exists(tempPath)) System.IO.File.Delete(tempPath); 
+                }
+            }
+
+            return Ok(new 
+            {
+                TournamentMode = mode,
+                TotalMatches = files.Count,
+                MatchesDetails = matchSummaries,
+                // Ordenar globales por Puntos > Wins > Kills
+                GlobalTeamLeaderboard = globalTeams.Values
+                    .OrderByDescending(x => x.TotalPoints)
+                    .ThenByDescending(x => x.Wins)
+                    .ThenByDescending(x => x.TotalKills)
+                    .ToList(),
+                GlobalPlayerLeaderboard = globalPlayers.Values
+                    .OrderByDescending(x => x.TotalPoints)
+                    .ThenByDescending(x => x.Wins)
+                    .ThenByDescending(x => x.TotalKills)
+                    .ToList()
+            });
+        }
+
+        // --- Helpers ---
+
+        private ScoringRules GetRules(string? json, GameMode mode)
+        {
+            // Intentar parsear JSON del cliente
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                try 
+                { 
+                    return JsonSerializer.Deserialize<ScoringRules>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!; 
+                }
+                catch 
+                { 
+                    // Si falla, ignoramos y usamos defaults
+                }
+            }
+
+            // --- REGLAS POR DEFECTO ---
+            // Basadas en la solicitud del usuario
+            int winBonus = 5; // Default (Solos/Duos/Squads)
+            if (mode == GameMode.Trios) winBonus = 15; // Trios específicamente pidió 15 pts por victoria
+
+            return new ScoringRules
+            {
+                UseLinearPlacement = true,
+                PointsPerKill = 2,
+                WinBonus = winBonus
+            };
+        }
+
+        // DTOs para el reporte de torneo
+        public class TournamentPlayerStats 
+        { 
+            public string Name { get; set; } = "";
+            public int TotalPoints { get; set; } 
+            public int TotalKills { get; set; } 
+            public int Wins { get; set; }
+            public int MatchesPlayed { get; set; }
+        }
+
+        public class TournamentTeamStats 
+        { 
+            public List<string> MemberNames { get; set; } = new List<string>();
+            public int TotalPoints { get; set; } 
+            public int TotalKills { get; set; } 
+            public int Wins { get; set; }
+            public int MatchesPlayed { get; set; }
         }
     }
 }
