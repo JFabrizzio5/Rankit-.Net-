@@ -24,8 +24,8 @@ namespace FortniteReplayAPI.Models
         public int TeamId { get; set; }
         public int Rank { get; set; }
         public int Kills { get; set; }
-        public bool IsWinner { get; set; } // Nuevo: Indica explícitamente si ganó (Top 1)
-        public string? EliminatedBy { get; set; } // Nuevo: Quién lo eliminó
+        public bool IsWinner { get; set; } 
+        public string? EliminatedBy { get; set; }
 
         // Puntos desglosados
         public int KillPoints { get; set; }
@@ -39,7 +39,7 @@ namespace FortniteReplayAPI.Models
         public int TeamId { get; set; }
         public int Rank { get; set; }
         public List<string> MemberNames { get; set; } = new();
-        public bool IsWinner { get; set; } // Nuevo: Indica si el equipo ganó esta partida
+        public bool IsWinner { get; set; }
         
         public int TotalKills { get; set; }
         public int KillPoints { get; set; }
@@ -56,11 +56,10 @@ namespace FortniteReplayAPI.Models
         public int TotalMatches { get; set; }
         public List<string> ProcessedFiles { get; set; } = new();
         
-        // Tablas de posiciones ACUMULADAS (La suma de todas las partidas)
+        // Tablas de posiciones ACUMULADAS
         public List<TournamentTeamResult> OverallTeamLeaderboard { get; set; } = new();
         public List<TournamentPlayerResult> OverallPlayerLeaderboard { get; set; } = new();
         
-        // Detalle por partida (opcional, para ver el desglose si se necesita)
         public List<MatchAnalysisResponse> MatchDetails { get; set; } = new();
     }
 
@@ -71,11 +70,12 @@ namespace FortniteReplayAPI.Models
         
         // Estadísticas acumuladas
         public int MatchesPlayed { get; set; }
-        public int Wins { get; set; } // Cantidad de victorias (Top 1) en el torneo
+        public int Wins { get; set; } 
         public int TotalKills { get; set; }
         
-        public int TotalPlacementPoints { get; set; }
-        public int TotalKillPoints { get; set; }
+        // CAMBIO: Nombres estandarizados para coincidir con MatchResult
+        public int PlacementPoints { get; set; } // Antes TotalPlacementPoints
+        public int KillPoints { get; set; }      // Antes TotalKillPoints
         public int TotalPoints { get; set; }
         
         public double AverageRank { get; set; }
@@ -91,8 +91,9 @@ namespace FortniteReplayAPI.Models
         public int Wins { get; set; }
         public int TotalKills { get; set; }
         
-        public int TotalPlacementPoints { get; set; }
-        public int TotalKillPoints { get; set; }
+        // CAMBIO: Nombres estandarizados
+        public int PlacementPoints { get; set; } // Antes TotalPlacementPoints
+        public int KillPoints { get; set; }      // Antes TotalKillPoints
         public int TotalPoints { get; set; }
         
         public double AverageRank { get; set; }
@@ -105,22 +106,16 @@ namespace FortniteReplayAPI.Models
     public class ScoringRules
     {
         public int PointsPerKill { get; set; } = 1;
-        
-        // Si true, usa fórmula lineal: (TotalTeams - Rank) + Bonus
-        // Si false, usa Thresholds o Ranges (estilo competitivo clásico)
         public bool UseLinearPlacement { get; set; } = true; 
-        
-        public int WinBonus { get; set; } = 5; // Puntos extra solo para el Top 1 (si es lineal)
-
-        // Opciones Legacy (para torneos con reglas específicas)
+        public int WinBonus { get; set; } = 5; 
         public List<PlacementThreshold>? Thresholds { get; set; }
         public List<PlacementRange>? Ranges { get; set; }
     }
 
     public class PlacementThreshold
     {
-        public int ThresholdRank { get; set; } // Ej: Top 25
-        public int Points { get; set; }        // Puntos otorgados
+        public int ThresholdRank { get; set; } 
+        public int Points { get; set; }        
     }
 
     public class PlacementRange
