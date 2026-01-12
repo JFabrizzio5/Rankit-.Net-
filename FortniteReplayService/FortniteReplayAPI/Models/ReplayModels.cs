@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace FortniteReplayAPI.Models
 {
     // ==========================================
@@ -42,6 +45,8 @@ namespace FortniteReplayAPI.Models
         public bool IsWinner { get; set; }
         
         public int TotalKills { get; set; }
+        
+        // Puntos desglosados
         public int KillPoints { get; set; }
         public int PlacementPoints { get; set; }
         public int TotalPoints { get; set; }
@@ -60,12 +65,13 @@ namespace FortniteReplayAPI.Models
         public List<TournamentTeamResult> OverallTeamLeaderboard { get; set; } = new();
         public List<TournamentPlayerResult> OverallPlayerLeaderboard { get; set; } = new();
         
+        // Opcional: Detalles por partida si se necesitan en el frontend
         public List<MatchAnalysisResponse> MatchDetails { get; set; } = new();
     }
 
     public class TournamentTeamResult
     {
-        public int TeamId { get; set; }
+        public int TeamId { get; set; } // ID generado o hash para el torneo
         public List<string> MemberNames { get; set; } = new();
         
         // Estadísticas acumuladas
@@ -73,11 +79,12 @@ namespace FortniteReplayAPI.Models
         public int Wins { get; set; } 
         public int TotalKills { get; set; }
         
-        // CAMBIO: Nombres estandarizados para coincidir con MatchResult
-        public int PlacementPoints { get; set; } // Antes TotalPlacementPoints
-        public int KillPoints { get; set; }      // Antes TotalKillPoints
+        // Puntos acumulados desglosados
+        public int PlacementPoints { get; set; }
+        public int KillPoints { get; set; }
         public int TotalPoints { get; set; }
         
+        // Promedios
         public double AverageRank { get; set; }
         public double AverageKills { get; set; }
     }
@@ -87,16 +94,19 @@ namespace FortniteReplayAPI.Models
         public string Id { get; set; } = string.Empty;
         public string PlayerName { get; set; } = string.Empty;
         
+        // Estadísticas acumuladas
         public int MatchesPlayed { get; set; }
         public int Wins { get; set; }
         public int TotalKills { get; set; }
         
-        // CAMBIO: Nombres estandarizados
-        public int PlacementPoints { get; set; } // Antes TotalPlacementPoints
-        public int KillPoints { get; set; }      // Antes TotalKillPoints
+        // Puntos acumulados desglosados
+        public int PlacementPoints { get; set; }
+        public int KillPoints { get; set; }
         public int TotalPoints { get; set; }
         
+        // Promedios
         public double AverageRank { get; set; }
+        public double AverageKills { get; set; }
     }
 
     // ==========================================

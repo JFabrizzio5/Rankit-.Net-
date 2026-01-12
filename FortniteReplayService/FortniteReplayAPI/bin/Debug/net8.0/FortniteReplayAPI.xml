@@ -11,7 +11,7 @@
         </member>
         <member name="M:FortniteReplayAPI.Controllers.FortniteParserController.AnalyzeTournament(System.Collections.Generic.List{Microsoft.AspNetCore.Http.IFormFile},FortniteReplayAPI.Models.GameMode,System.String)">
             <summary>
-            Analiza un torneo completo (múltiples partidas).
+            Analiza un torneo completo (múltiples partidas) y calcula acumulados y promedios.
             </summary>
         </member>
     </members>
