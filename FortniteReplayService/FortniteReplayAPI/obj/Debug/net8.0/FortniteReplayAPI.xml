@@ -4,24 +4,15 @@
         <name>FortniteReplayAPI</name>
     </assembly>
     <members>
-        <member name="M:FortniteReplayAPI.Controllers.FortniteParserController.Analyze(Microsoft.AspNetCore.Http.IFormFile,System.String)">
+        <member name="M:FortniteReplayAPI.Controllers.FortniteParserController.Analyze(Microsoft.AspNetCore.Http.IFormFile,FortniteReplayAPI.Models.GameMode,System.String)">
             <summary>
-            Sube un archivo .replay y calcula la tabla de posiciones según las reglas JSON enviadas.
+            Analiza una sola partida.
             </summary>
-            <param name="file">El archivo .replay de Fortnite.</param>
-            <param name="rulesJson">
-            Cadena JSON con las reglas. 
-            Ejemplo: { "pointsPerKill": 2, "thresholds": [{"thresholdRank": 1, "points": 10}], "ranges": [{"startRank": 50, "endRank": 1, "pointsPerStep": 1}] }
-            </param>
-            <returns>Lista de resultados ordenados.</returns>
         </member>
-        <member name="M:FortniteReplayAPI.Controllers.FortniteParserController.AnalyzeTournament(System.Collections.Generic.List{Microsoft.AspNetCore.Http.IFormFile},System.String)">
+        <member name="M:FortniteReplayAPI.Controllers.FortniteParserController.AnalyzeTournament(System.Collections.Generic.List{Microsoft.AspNetCore.Http.IFormFile},FortniteReplayAPI.Models.GameMode,System.String)">
             <summary>
-            Sube MÚLTIPLES archivos .replay y genera una Tabla Global acumulada (Torneo).
+            Analiza un torneo completo (múltiples partidas).
             </summary>
-            <param name="files">Lista de archivos .replay.</param>
-            <param name="rulesJson">Reglas de puntuación aplicables a TODAS las partidas.</param>
-            <returns>Ranking global acumulado.</returns>
         </member>
         <member name="T:FortniteReplayAPI.Models.ReplayFile">
             <summary>
@@ -33,39 +24,24 @@
             Detalles específicos de la partida.
             </summary>
         </member>
-        <member name="T:FortniteReplayAPI.Models.PlayerStat">
-            <summary>
-            Estadísticas de un jugador individual en la partida.
-            </summary>
-        </member>
-        <member name="T:FortniteReplayAPI.Models.EliminationEvent">
-            <summary>
-            Representa un evento de eliminación en la línea de tiempo.
-            </summary>
-        </member>
-        <member name="T:FortniteReplayAPI.Models.ReplayUploadRequest">
-            <summary>
-            DTO para recibir la subida del archivo desde el cliente.
-            </summary>
-        </member>
         <member name="T:FortniteReplayAPI.Models.ScoringRules">
             <summary>
-            Define las reglas para calcular el puntaje de una partida.
-            </summary>
-        </member>
-        <member name="T:FortniteReplayAPI.Models.RankThreshold">
-            <summary>
-            Define un umbral de rango específico para otorgar puntos (ej. Top 10 = 5 puntos).
-            </summary>
-        </member>
-        <member name="T:FortniteReplayAPI.Models.RankRange">
-            <summary>
-            Define un rango de posiciones para otorgar puntos progresivos.
+            Define las reglas de puntuación.
             </summary>
         </member>
         <member name="T:FortniteReplayAPI.Models.MatchResult">
             <summary>
-            Resultado calculado tras aplicar las reglas de puntuación.
+            Resultado de un jugador individual.
+            </summary>
+        </member>
+        <member name="T:FortniteReplayAPI.Models.TeamMatchResult">
+            <summary>
+            Resultado agrupado por equipo.
+            </summary>
+        </member>
+        <member name="T:FortniteReplayAPI.Models.MatchAnalysisResponse">
+            <summary>
+            Respuesta completa de la API con ambas tablas.
             </summary>
         </member>
     </members>
