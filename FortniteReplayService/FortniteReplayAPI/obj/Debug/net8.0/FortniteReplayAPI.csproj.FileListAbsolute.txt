@@ -44,3 +44,4 @@ D:\Github2\Rankit-.Net-\FortniteReplayService\FortniteReplayAPI\obj\Debug\net8.0
 D:\Github2\Rankit-.Net-\FortniteReplayService\FortniteReplayAPI\obj\Debug\net8.0\FortniteReplayAPI.pdb
 D:\Github2\Rankit-.Net-\FortniteReplayService\FortniteReplayAPI\obj\Debug\net8.0\FortniteReplayAPI.genruntimeconfig.cache
 D:\Github2\Rankit-.Net-\FortniteReplayService\FortniteReplayAPI\obj\Debug\net8.0\ref\FortniteReplayAPI.dll
+D:\Github2\Rankit-.Net-\FortniteReplayService\FortniteReplayAPI\obj\Debug\net8.0\FortniteReplayAPI.sourcelink.json

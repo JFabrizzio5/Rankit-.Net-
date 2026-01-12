@@ -23,54 +23,49 @@
             <param name="rulesJson">Reglas de puntuación aplicables a TODAS las partidas.</param>
             <returns>Ranking global acumulado.</returns>
         </member>
+        <member name="T:FortniteReplayAPI.Models.ReplayFile">
+            <summary>
+            Modelo principal que representa un archivo de Replay analizado.
+            </summary>
+        </member>
+        <member name="T:FortniteReplayAPI.Models.MatchData">
+            <summary>
+            Detalles específicos de la partida.
+            </summary>
+        </member>
+        <member name="T:FortniteReplayAPI.Models.PlayerStat">
+            <summary>
+            Estadísticas de un jugador individual en la partida.
+            </summary>
+        </member>
+        <member name="T:FortniteReplayAPI.Models.EliminationEvent">
+            <summary>
+            Representa un evento de eliminación en la línea de tiempo.
+            </summary>
+        </member>
+        <member name="T:FortniteReplayAPI.Models.ReplayUploadRequest">
+            <summary>
+            DTO para recibir la subida del archivo desde el cliente.
+            </summary>
+        </member>
         <member name="T:FortniteReplayAPI.Models.ScoringRules">
             <summary>
-            Reglas de puntuación para el torneo o partida.
+            Define las reglas para calcular el puntaje de una partida.
             </summary>
         </member>
-        <member name="P:FortniteReplayAPI.Models.ScoringRules.PointsPerKill">
+        <member name="T:FortniteReplayAPI.Models.RankThreshold">
             <summary>
-            Puntos otorgados por cada eliminación. Default: 1.
+            Define un umbral de rango específico para otorgar puntos (ej. Top 10 = 5 puntos).
             </summary>
         </member>
-        <member name="P:FortniteReplayAPI.Models.ScoringRules.Thresholds">
+        <member name="T:FortniteReplayAPI.Models.RankRange">
             <summary>
-            Puntos fijos al alcanzar cierta posición (Ej: Top 1 = 10 pts).
-            </summary>
-        </member>
-        <member name="P:FortniteReplayAPI.Models.ScoringRules.Ranges">
-            <summary>
-            Puntos progresivos por rango (Ej: Top 50 al 40 suma 1 pto por puesto).
-            </summary>
-        </member>
-        <member name="P:FortniteReplayAPI.Models.PlacementThreshold.ThresholdRank">
-            <summary>
-            La posición necesaria para ganar los puntos (Ej: 25 para Top 25).
-            </summary>
-        </member>
-        <member name="P:FortniteReplayAPI.Models.PlacementThreshold.Points">
-            <summary>
-            Cantidad de puntos a sumar.
-            </summary>
-        </member>
-        <member name="P:FortniteReplayAPI.Models.PlacementRange.StartRank">
-            <summary>
-            Inicio del rango (peor posición), ej: 30.
-            </summary>
-        </member>
-        <member name="P:FortniteReplayAPI.Models.PlacementRange.EndRank">
-            <summary>
-            Fin del rango (mejor posición), ej: 20.
-            </summary>
-        </member>
-        <member name="P:FortniteReplayAPI.Models.PlacementRange.PointsPerStep">
-            <summary>
-            Puntos sumados por cada "escalón" o posición mejorada dentro de este rango.
+            Define un rango de posiciones para otorgar puntos progresivos.
             </summary>
         </member>
         <member name="T:FortniteReplayAPI.Models.MatchResult">
             <summary>
-            Resultado procesado de un jugador.
+            Resultado calculado tras aplicar las reglas de puntuación.
             </summary>
         </member>
     </members>

@@ -13,16 +13,16 @@ namespace FortniteReplayAPI.Models
         [Key]
         public string Id { get; set; } = Guid.NewGuid().ToString();
 
-        public string FileName { get; set; }
+        public string? FileName { get; set; }
         
-        public string Hash { get; set; }
+        public string? Hash { get; set; }
 
         public DateTime UploadDate { get; set; } = DateTime.UtcNow;
 
-        public string UserId { get; set; }
+        public string? UserId { get; set; }
 
         // Relación con los datos de la partida
-        public MatchData MatchInfo { get; set; }
+        public MatchData? MatchInfo { get; set; }
     }
 
     /// <summary>
@@ -34,13 +34,13 @@ namespace FortniteReplayAPI.Models
         
         public int DurationInMilliseconds { get; set; }
         
-        public string GameVersion { get; set; }
+        public string? GameVersion { get; set; }
         
         public int TotalPlayers { get; set; }
         
         public bool IsTournament { get; set; }
 
-        public string PlaylistId { get; set; } // Ejemplo: 'Playlist_DefaultSolo'
+        public string? PlaylistId { get; set; } // Ejemplo: 'Playlist_DefaultSolo'
 
         public List<PlayerStat> Players { get; set; } = new List<PlayerStat>();
         
@@ -52,9 +52,9 @@ namespace FortniteReplayAPI.Models
     /// </summary>
     public class PlayerStat
     {
-        public string EpicId { get; set; }
+        public string? EpicId { get; set; }
         
-        public string Username { get; set; }
+        public string? Username { get; set; }
         
         public bool IsBot { get; set; }
         
@@ -70,7 +70,7 @@ namespace FortniteReplayAPI.Models
         
         public int MaterialsGathered { get; set; }
         
-        public string Platform { get; set; } // PC, PSN, XBL, etc.
+        public string? Platform { get; set; } // PC, PSN, XBL, etc.
     }
 
     /// <summary>
@@ -80,11 +80,11 @@ namespace FortniteReplayAPI.Models
     {
         public int TimeOffset { get; set; } // Tiempo desde el inicio en ms
         
-        public string KillerId { get; set; }
+        public string? KillerId { get; set; }
         
-        public string VictimId { get; set; }
+        public string? VictimId { get; set; }
         
-        public string Weapon { get; set; } // Ejemplo: 'Rifle de Asalto'
+        public string? Weapon { get; set; } // Ejemplo: 'Rifle de Asalto'
         
         public bool IsHeadshot { get; set; }
         
@@ -97,12 +97,12 @@ namespace FortniteReplayAPI.Models
     public class ReplayUploadRequest
     {
         [Required]
-        public string FileName { get; set; }
+        public string? FileName { get; set; }
 
         [Required]
-        public byte[] FileContent { get; set; }
+        public byte[]? FileContent { get; set; }
 
-        public string UserNotes { get; set; }
+        public string? UserNotes { get; set; }
     }
 
     /// <summary>
@@ -114,7 +114,28 @@ namespace FortniteReplayAPI.Models
         public int PointsForWin { get; set; } = 10;
         public int PointsForTop10 { get; set; } = 5;
         public int PointsForTop25 { get; set; } = 2;
-        // Puedes agregar lógica adicional o diccionarios para reglas complejas aquí
+
+        public List<RankThreshold> Thresholds { get; set; } = new List<RankThreshold>();
+        public List<RankRange> Ranges { get; set; } = new List<RankRange>();
+    }
+
+    /// <summary>
+    /// Define un umbral de rango específico para otorgar puntos (ej. Top 10 = 5 puntos).
+    /// </summary>
+    public class RankThreshold 
+    {
+        public int ThresholdRank { get; set; }
+        public int Points { get; set; }
+    }
+
+    /// <summary>
+    /// Define un rango de posiciones para otorgar puntos progresivos.
+    /// </summary>
+    public class RankRange
+    {
+        public int StartRank { get; set; }
+        public int EndRank { get; set; }
+        public int PointsPerStep { get; set; }
     }
 
     /// <summary>
@@ -122,10 +143,20 @@ namespace FortniteReplayAPI.Models
     /// </summary>
     public class MatchResult
     {
-        public string ReplayId { get; set; }
-        public int TotalScore { get; set; }
+        // Propiedad Id requerida por el controlador
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        
+        public string? ReplayId { get; set; }
+        
+        public string? PlayerName { get; set; }
+        public bool IsBot { get; set; }
+        public int Kills { get; set; }
+        public int TotalPoints { get; set; } 
+        
+        // Cambiado a int para solucionar error CS0029 (asignación de entero a string)
+        public int Rank { get; set; } 
+
         public int KillPoints { get; set; }
         public int PlacementPoints { get; set; }
-        public string RankLabel { get; set; } // e.g., "Gold", "Platinum"
     }
 }
