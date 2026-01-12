@@ -14,35 +14,5 @@
             Analiza un torneo completo (múltiples partidas).
             </summary>
         </member>
-        <member name="T:FortniteReplayAPI.Models.ReplayFile">
-            <summary>
-            Modelo principal que representa un archivo de Replay analizado.
-            </summary>
-        </member>
-        <member name="T:FortniteReplayAPI.Models.MatchData">
-            <summary>
-            Detalles específicos de la partida.
-            </summary>
-        </member>
-        <member name="T:FortniteReplayAPI.Models.ScoringRules">
-            <summary>
-            Define las reglas de puntuación.
-            </summary>
-        </member>
-        <member name="T:FortniteReplayAPI.Models.MatchResult">
-            <summary>
-            Resultado de un jugador individual.
-            </summary>
-        </member>
-        <member name="T:FortniteReplayAPI.Models.TeamMatchResult">
-            <summary>
-            Resultado agrupado por equipo.
-            </summary>
-        </member>
-        <member name="T:FortniteReplayAPI.Models.MatchAnalysisResponse">
-            <summary>
-            Respuesta completa de la API con ambas tablas.
-            </summary>
-        </member>
     </members>
 </doc>

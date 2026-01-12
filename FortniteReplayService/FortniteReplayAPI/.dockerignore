@@ -1,0 +1,30 @@
+# ===============================
+# Directorios de compilación y cache
+# ===============================
+bin/
+obj/
+.vs/
+.vscode/
+.idea/
+
+# ===============================
+# Archivos de configuración de usuario o entorno local
+# ===============================
+*.user
+appsettings.Development.json
+
+# (Opcional) Si tienes secretos en appsettings.json local,
+# descomenta la siguiente línea:
+# appsettings.json
+
+# ===============================
+# Archivos grandes de prueba
+# ===============================
+TESTREPLAYS/
+*.replay
+*.pdb
+
+# ===============================
+# Logs y archivos temporales
+# ===============================
+*.log

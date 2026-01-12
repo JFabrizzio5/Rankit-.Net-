@@ -1,155 +1,140 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-
 namespace FortniteReplayAPI.Models
 {
-    // Enum para definir la modalidad de juego
-    public enum GameMode
-    {
-        Solos = 1,
-        Duos = 2,
-        Trios = 3,
-        Squads = 4
-    }
+    // ==========================================
+    // RESULTADOS DE UNA SOLA PARTIDA (MATCH)
+    // ==========================================
 
-    /// <summary>
-    /// Modelo principal que representa un archivo de Replay analizado.
-    /// </summary>
-    public class ReplayFile
+    public class MatchAnalysisResponse
     {
-        [Key]
-        public string Id { get; set; } = Guid.NewGuid().ToString();
-        public string? FileName { get; set; }
-        public string? Hash { get; set; }
-        public DateTime UploadDate { get; set; } = DateTime.UtcNow;
-        public string? UserId { get; set; }
-        public MatchData? MatchInfo { get; set; }
-    }
-
-    /// <summary>
-    /// Detalles específicos de la partida.
-    /// </summary>
-    public class MatchData
-    {
-        public DateTime MatchDate { get; set; }
-        public int DurationInMilliseconds { get; set; }
-        public string? GameVersion { get; set; }
+        public string FileName { get; set; } = string.Empty;
+        public DateTime ProcessedAt { get; set; }
+        public int TotalTeams { get; set; }
         public int TotalPlayers { get; set; }
-        public bool IsTournament { get; set; }
-        public string? PlaylistId { get; set; }
-        public List<PlayerStat> Players { get; set; } = new List<PlayerStat>();
-        public List<EliminationEvent> KillFeed { get; set; } = new List<EliminationEvent>();
+        public GameMode Mode { get; set; }
+        public List<TeamMatchResult> TeamLeaderboard { get; set; } = new();
+        public List<MatchResult> PlayerLeaderboard { get; set; } = new();
     }
 
-    public class PlayerStat
+    // Resultado individual en UNA partida
+    public class MatchResult
     {
-        public string? EpicId { get; set; }
-        public string? Username { get; set; }
+        public string Id { get; set; } = string.Empty; // Epic ID
+        public string PlayerName { get; set; } = string.Empty;
         public bool IsBot { get; set; }
-        public int Placement { get; set; }
+        public int TeamId { get; set; }
+        public int Rank { get; set; }
         public int Kills { get; set; }
-        public int Assists { get; set; }
-        public int DamageDealt { get; set; }
-        public int DamageTaken { get; set; }
-        public int MaterialsGathered { get; set; }
-        public string? Platform { get; set; }
+        public bool IsWinner { get; set; } // Nuevo: Indica explícitamente si ganó (Top 1)
+        public string? EliminatedBy { get; set; } // Nuevo: Quién lo eliminó
+
+        // Puntos desglosados
+        public int KillPoints { get; set; }
+        public int PlacementPoints { get; set; } 
+        public int TotalPoints { get; set; }
     }
 
-    public class EliminationEvent
+    // Resultado de equipo en UNA partida
+    public class TeamMatchResult
     {
-        public int TimeOffset { get; set; }
-        public string? KillerId { get; set; }
-        public string? VictimId { get; set; }
-        public string? Weapon { get; set; }
-        public bool IsHeadshot { get; set; }
-        public float Distance { get; set; }
+        public int TeamId { get; set; }
+        public int Rank { get; set; }
+        public List<string> MemberNames { get; set; } = new();
+        public bool IsWinner { get; set; } // Nuevo: Indica si el equipo ganó esta partida
+        
+        public int TotalKills { get; set; }
+        public int KillPoints { get; set; }
+        public int PlacementPoints { get; set; }
+        public int TotalPoints { get; set; }
     }
 
-    public class ReplayUploadRequest
+    // ==========================================
+    // RESULTADOS DEL TORNEO (RESUMEN GLOBAL)
+    // ==========================================
+
+    public class TournamentAnalysisResponse
     {
-        [Required]
-        public string? FileName { get; set; }
-        [Required]
-        public byte[]? FileContent { get; set; }
-        public string? UserNotes { get; set; }
+        public int TotalMatches { get; set; }
+        public List<string> ProcessedFiles { get; set; } = new();
+        
+        // Tablas de posiciones ACUMULADAS (La suma de todas las partidas)
+        public List<TournamentTeamResult> OverallTeamLeaderboard { get; set; } = new();
+        public List<TournamentPlayerResult> OverallPlayerLeaderboard { get; set; } = new();
+        
+        // Detalle por partida (opcional, para ver el desglose si se necesita)
+        public List<MatchAnalysisResponse> MatchDetails { get; set; } = new();
     }
 
-    /// <summary>
-    /// Define las reglas de puntuación.
-    /// </summary>
+    public class TournamentTeamResult
+    {
+        public int TeamId { get; set; }
+        public List<string> MemberNames { get; set; } = new();
+        
+        // Estadísticas acumuladas
+        public int MatchesPlayed { get; set; }
+        public int Wins { get; set; } // Cantidad de victorias (Top 1) en el torneo
+        public int TotalKills { get; set; }
+        
+        public int TotalPlacementPoints { get; set; }
+        public int TotalKillPoints { get; set; }
+        public int TotalPoints { get; set; }
+        
+        public double AverageRank { get; set; }
+        public double AverageKills { get; set; }
+    }
+
+    public class TournamentPlayerResult
+    {
+        public string Id { get; set; } = string.Empty;
+        public string PlayerName { get; set; } = string.Empty;
+        
+        public int MatchesPlayed { get; set; }
+        public int Wins { get; set; }
+        public int TotalKills { get; set; }
+        
+        public int TotalPlacementPoints { get; set; }
+        public int TotalKillPoints { get; set; }
+        public int TotalPoints { get; set; }
+        
+        public double AverageRank { get; set; }
+    }
+
+    // ==========================================
+    // REGLAS DE PUNTUACIÓN
+    // ==========================================
+
     public class ScoringRules
     {
-        // Si es true, usa la fórmula: (TotalTeams - Rank) * Multiplicador
+        public int PointsPerKill { get; set; } = 1;
+        
+        // Si true, usa fórmula lineal: (TotalTeams - Rank) + Bonus
+        // Si false, usa Thresholds o Ranges (estilo competitivo clásico)
         public bool UseLinearPlacement { get; set; } = true; 
         
-        public int PointsPerKill { get; set; } = 2;
-        public int WinBonus { get; set; } = 5; // Puntos extra por ganar (Top 1)
+        public int WinBonus { get; set; } = 5; // Puntos extra solo para el Top 1 (si es lineal)
 
-        // Listas para lógica personalizada (si UseLinearPlacement es false)
-        public List<RankThreshold> Thresholds { get; set; } = new List<RankThreshold>();
-        public List<RankRange> Ranges { get; set; } = new List<RankRange>();
+        // Opciones Legacy (para torneos con reglas específicas)
+        public List<PlacementThreshold>? Thresholds { get; set; }
+        public List<PlacementRange>? Ranges { get; set; }
     }
 
-    public class RankThreshold 
+    public class PlacementThreshold
     {
-        public int ThresholdRank { get; set; }
-        public int Points { get; set; }
+        public int ThresholdRank { get; set; } // Ej: Top 25
+        public int Points { get; set; }        // Puntos otorgados
     }
 
-    public class RankRange
+    public class PlacementRange
     {
         public int StartRank { get; set; }
         public int EndRank { get; set; }
         public int PointsPerStep { get; set; }
     }
 
-    /// <summary>
-    /// Resultado de un jugador individual.
-    /// </summary>
-    public class MatchResult
+    public enum GameMode
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
-        public string? PlayerName { get; set; }
-        public int TeamId { get; set; } // ID del equipo (interno del replay)
-        public bool IsBot { get; set; }
-        public int Kills { get; set; }
-        
-        public int Rank { get; set; } // Posición final del equipo
-        
-        public int KillPoints { get; set; }
-        public int PlacementPoints { get; set; } // Puntos por posición (ya multiplicados)
-        public int TotalPoints { get; set; }
-    }
-
-    /// <summary>
-    /// Resultado agrupado por equipo.
-    /// </summary>
-    public class TeamMatchResult
-    {
-        public int TeamId { get; set; }
-        public int Rank { get; set; }
-        public List<string> MemberNames { get; set; } = new List<string>();
-        
-        public int TotalKills { get; set; }
-        
-        public int KillPoints { get; set; }
-        public int PlacementPoints { get; set; }
-        public int TotalPoints { get; set; }
-    }
-
-    /// <summary>
-    /// Respuesta completa de la API con ambas tablas.
-    /// </summary>
-    public class MatchAnalysisResponse
-    {
-        public string FileName { get; set; } = "";
-        public DateTime ProcessedAt { get; set; }
-        public int TotalTeams { get; set; }
-        public int TotalPlayers { get; set; }
-        public GameMode Mode { get; set; }
-        
-        public List<TeamMatchResult> TeamLeaderboard { get; set; } = new List<TeamMatchResult>();
-        public List<MatchResult> PlayerLeaderboard { get; set; } = new List<MatchResult>();
+        Solos = 1,
+        Duos = 2,
+        Trios = 3,
+        Squads = 4
     }
 }
