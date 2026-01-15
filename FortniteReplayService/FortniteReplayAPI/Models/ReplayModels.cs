@@ -26,13 +26,16 @@ namespace FortniteReplayAPI.Models
         public bool IsBot { get; set; }
         public int TeamId { get; set; }
         public int Rank { get; set; }
+
         public int Kills { get; set; }
-        public bool IsWinner { get; set; } 
+        public int Knocks { get; set; } // <--- NUEVO: Contador de derribos
+
+        public bool IsWinner { get; set; }
         public string? EliminatedBy { get; set; }
 
         // Puntos desglosados
         public int KillPoints { get; set; }
-        public int PlacementPoints { get; set; } 
+        public int PlacementPoints { get; set; }
         public int TotalPoints { get; set; }
     }
 
@@ -43,9 +46,10 @@ namespace FortniteReplayAPI.Models
         public int Rank { get; set; }
         public List<string> MemberNames { get; set; } = new();
         public bool IsWinner { get; set; }
-        
+
         public int TotalKills { get; set; }
-        
+        public int TotalKnocks { get; set; } // <--- NUEVO: Derribos totales del equipo
+
         // Puntos desglosados
         public int KillPoints { get; set; }
         public int PlacementPoints { get; set; }
@@ -60,11 +64,11 @@ namespace FortniteReplayAPI.Models
     {
         public int TotalMatches { get; set; }
         public List<string> ProcessedFiles { get; set; } = new();
-        
+
         // Tablas de posiciones ACUMULADAS
         public List<TournamentTeamResult> OverallTeamLeaderboard { get; set; } = new();
         public List<TournamentPlayerResult> OverallPlayerLeaderboard { get; set; } = new();
-        
+
         // Opcional: Detalles por partida si se necesitan en el frontend
         public List<MatchAnalysisResponse> MatchDetails { get; set; } = new();
     }
@@ -73,40 +77,44 @@ namespace FortniteReplayAPI.Models
     {
         public int TeamId { get; set; } // ID generado o hash para el torneo
         public List<string> MemberNames { get; set; } = new();
-        
+
         // Estadísticas acumuladas
         public int MatchesPlayed { get; set; }
-        public int Wins { get; set; } 
+        public int Wins { get; set; }
         public int TotalKills { get; set; }
-        
+        public int TotalKnocks { get; set; } // <--- NUEVO
+
         // Puntos acumulados desglosados
         public int PlacementPoints { get; set; }
         public int KillPoints { get; set; }
         public int TotalPoints { get; set; }
-        
+
         // Promedios
         public double AverageRank { get; set; }
         public double AverageKills { get; set; }
+        public double AverageKnocks { get; set; } // <--- NUEVO
     }
 
     public class TournamentPlayerResult
     {
         public string Id { get; set; } = string.Empty;
         public string PlayerName { get; set; } = string.Empty;
-        
+
         // Estadísticas acumuladas
         public int MatchesPlayed { get; set; }
         public int Wins { get; set; }
         public int TotalKills { get; set; }
-        
+        public int TotalKnocks { get; set; } // <--- NUEVO
+
         // Puntos acumulados desglosados
         public int PlacementPoints { get; set; }
         public int KillPoints { get; set; }
         public int TotalPoints { get; set; }
-        
+
         // Promedios
         public double AverageRank { get; set; }
         public double AverageKills { get; set; }
+        public double AverageKnocks { get; set; } // <--- NUEVO
     }
 
     // ==========================================

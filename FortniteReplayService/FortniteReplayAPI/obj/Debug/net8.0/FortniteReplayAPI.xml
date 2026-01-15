@@ -4,15 +4,5 @@
         <name>FortniteReplayAPI</name>
     </assembly>
     <members>
-        <member name="M:FortniteReplayAPI.Controllers.FortniteParserController.Analyze(Microsoft.AspNetCore.Http.IFormFile,FortniteReplayAPI.Models.GameMode,System.String)">
-            <summary>
-            Analiza una sola partida.
-            </summary>
-        </member>
-        <member name="M:FortniteReplayAPI.Controllers.FortniteParserController.AnalyzeTournament(System.Collections.Generic.List{Microsoft.AspNetCore.Http.IFormFile},FortniteReplayAPI.Models.GameMode,System.String)">
-            <summary>
-            Analiza un torneo completo (múltiples partidas) y calcula acumulados y promedios.
-            </summary>
-        </member>
     </members>
 </doc>

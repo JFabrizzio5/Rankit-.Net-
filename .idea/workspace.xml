@@ -4,7 +4,25 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f69c546c-39a8-41b0-8549-ba07654ce593" name="Changes" comment="" />
+    <list default="true" id="f69c546c-39a8-41b0-8549-ba07654ce593" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/Controllers/FortniteParserController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/Controllers/FortniteParserController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/Models/ReplayModels.cs" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/Models/ReplayModels.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/Service/ReplayService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/Service/ReplayService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/bin/Debug/net8.0/FortniteReplayAPI.dll" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/bin/Debug/net8.0/FortniteReplayAPI.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/bin/Debug/net8.0/FortniteReplayAPI.exe" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/bin/Debug/net8.0/FortniteReplayAPI.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/bin/Debug/net8.0/FortniteReplayAPI.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/bin/Debug/net8.0/FortniteReplayAPI.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/FortniteReplayAPI.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/FortniteReplayAPI.AssemblyInfo.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/FortniteReplayAPI.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/FortniteReplayAPI.AssemblyInfoInputs.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/FortniteReplayAPI.dll" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/FortniteReplayAPI.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/FortniteReplayAPI.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/FortniteReplayAPI.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/FortniteReplayAPI.sourcelink.json" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/FortniteReplayAPI.sourcelink.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/apphost.exe" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/apphost.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/ref/FortniteReplayAPI.dll" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/ref/FortniteReplayAPI.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/refint/FortniteReplayAPI.dll" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/refint/FortniteReplayAPI.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/rjsmcshtml.dswa.cache.json" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/rjsmcshtml.dswa.cache.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/rjsmrazor.dswa.cache.json" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/obj/Debug/net8.0/rjsmrazor.dswa.cache.json" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,27 +31,27 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 0
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
   <component name="ProjectId" id="388kNvMswwnNJThrN4P05aEWYP3" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -51,6 +69,7 @@
       <option name="presentableId" value="Default" />
       <updated>1768188551170</updated>
       <workItem from="1768188552494" duration="609000" />
+      <workItem from="1768457072165" duration="233000" />
     </task>
     <servers />
   </component>
