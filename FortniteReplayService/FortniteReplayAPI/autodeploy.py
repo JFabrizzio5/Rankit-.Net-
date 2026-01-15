@@ -15,11 +15,11 @@ import datetime
 # Rama que quieres vigilar (usualmente 'main' o 'master')
 RAMA = "main"
 
-# IMPORTANTE: Este nombre debe ser EXACTAMENTE el que pusiste en 'container_name' dentro de tu docker-compose.yml
-NOMBRE_CONTENEDOR = "fortnite_replay_container"
+# IMPORTANTE: Este nombre debe ser EXACTAMENTE el que sale en 'docker ps' (columna NAMES)
+NOMBRE_CONTENEDOR = "fortnite_replay_prod"
 
-# Nombre específico de tu archivo docker-compose (ej. docker-compose-prod.yml)
-ARCHIVO_DOCKER = "docker-compose-prod.yml"
+# Nombre específico de tu archivo docker-compose (con el punto, no guion)
+ARCHIVO_DOCKER = "docker-compose.prod.yml"
 
 # Detecta automáticamente la ruta donde está guardado este archivo script
 DIR_PROYECTO = os.path.dirname(os.path.abspath(__file__))
@@ -57,7 +57,6 @@ def ejecutar_comando(comando, mostrar_salida=False):
     except subprocess.CalledProcessError as e:
         if not mostrar_salida:
             # Solo si estaba oculto, mostramos el error ahora
-            # log(f"❌ Error al ejecutar: {comando}") # (Opcional: descomentar para debug profundo)
             pass 
         else:
             log(f"❌ Falló el comando visible: {comando}")
@@ -94,7 +93,7 @@ def main():
         log(f"⚠️ ALERTA: El contenedor '{NOMBRE_CONTENEDOR}' está DETENIDO o no existe.")
         log(f"🚑 Iniciando protocolo de recuperación usando {ARCHIVO_DOCKER}...")
         # Usamos -f para especificar el archivo correcto
-        ejecutar_comando(f"docker-compose -f {ARCHIVO_DOCKER} up -d", mostrar_salida=True)
+        ejecutar_comando(f"docker compose -f {ARCHIVO_DOCKER} up -d", mostrar_salida=True)
         # Si acabamos de levantarlo, quizás no necesitemos actualizar inmediatamente, 
         # pero dejamos que el flujo continúe por si acaso la versión local era vieja.
 
@@ -109,7 +108,7 @@ def main():
     if not estado_local or not estado_remoto:
         # Si falló git fetch, al menos nos aseguramos que el contenedor siga vivo con el código actual
         if not esta_corriendo():
-             ejecutar_comando(f"docker-compose -f {ARCHIVO_DOCKER} up -d", mostrar_salida=True)
+             ejecutar_comando(f"docker compose -f {ARCHIVO_DOCKER} up -d", mostrar_salida=True)
         return
 
     # Si son iguales, no hacemos nada (termina el script para ahorrar CPU)
@@ -129,7 +128,9 @@ def main():
     log(f"🐳 Reconstruyendo y reiniciando contenedor usando {ARCHIVO_DOCKER}...")
     
     # AQUÍ ESTÁ EL CAMBIO: mostrar_salida=True para ver el progreso en vivo y -f para el archivo
-    resultado_build = ejecutar_comando(f"docker-compose -f {ARCHIVO_DOCKER} up -d --build", mostrar_salida=True)
+    # Usamos 'docker compose' (v2) o 'docker-compose' (v1) según lo que soporte el servidor
+    # Si te falla, cambia 'docker compose' por 'docker-compose'
+    resultado_build = ejecutar_comando(f"docker compose -f {ARCHIVO_DOCKER} up -d --build", mostrar_salida=True)
     
     if resultado_build:
         log("🚀 Despliegue de Docker finalizado.")
@@ -140,7 +141,7 @@ def main():
         # D) Verificación final
         verificar_estado_contenedor()
     else:
-        log("🔥 ERROR CRÍTICO: Falló el docker-compose up. Revisa el código.")
+        log("🔥 ERROR CRÍTICO: Falló el docker compose up. Revisa el código.")
 
 if __name__ == "__main__":
     try:
