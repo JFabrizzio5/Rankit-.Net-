@@ -1,13 +1,28 @@
 import subprocess
 import os
 import sys
+import datetime
 
-# Configuración
-RAMA = "main"          # O "master", según tu repo
-NOMBRE_CONTENEDOR = "fortnite_replay_prod" # El nombre que pusimos en el docker-compose
+# --- CONFIGURACIÓN ---
+
+# Rama que quieres vigilar (usualmente 'main' o 'master')
+RAMA = "main"
+
+# IMPORTANTE: Este nombre debe ser EXACTAMENTE el que pusiste en 'container_name' dentro de tu docker-compose.yml
+# Si usaste la configuración de producción anterior, probablemente sea "fortnite_replay_prod"
+# Si usaste la de desarrollo, puede ser "fortnite_replay_container"
+NOMBRE_CONTENEDOR = "fortnite_replay_container"
+
+# Detecta automáticamente la ruta donde está guardado este archivo script
+DIR_PROYECTO = os.path.dirname(os.path.abspath(__file__))
+
+def log(mensaje):
+    """Imprime mensajes con la fecha y hora actual para el log."""
+    ahora = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{ahora}] {mensaje}")
 
 def ejecutar_comando(comando):
-    """Ejecuta un comando de terminal y devuelve el resultado."""
+    """Ejecuta un comando de terminal y devuelve el resultado limpio."""
     try:
         resultado = subprocess.run(
             comando, 
@@ -18,43 +33,87 @@ def ejecutar_comando(comando):
         )
         return resultado.stdout.strip()
     except subprocess.CalledProcessError as e:
-        print(f"❌ Error al ejecutar: {comando}")
-        print(e.stderr)
+        # No logueamos error aquí para evitar ruido si es un chequeo simple
         return None
 
-def main():
-    print("🔄 Verificando actualizaciones en GitHub...")
+def esta_corriendo():
+    """Devuelve True si el contenedor está activo, False si está apagado o no existe."""
+    cmd = f"docker inspect -f '{{{{.State.Running}}}}' {NOMBRE_CONTENEDOR}"
+    resultado = ejecutar_comando(cmd)
+    return resultado == "true"
+
+def verificar_estado_contenedor():
+    """Revisa si el contenedor está vivo y cuándo se creó."""
+    cmd = f"docker inspect -f '{{{{.State.StartedAt}}}}' {NOMBRE_CONTENEDOR}"
+    fecha_inicio = ejecutar_comando(cmd)
     
-    # 1. Traer los cambios de la nube (git fetch) sin fusionar aún
+    if fecha_inicio:
+        log(f"✅ ESTADO: El contenedor '{NOMBRE_CONTENEDOR}' está CORRIENDO.")
+        log(f"🕒 INICIADO: {fecha_inicio}")
+    else:
+        log(f"⚠️ ALERTA: El contenedor '{NOMBRE_CONTENEDOR}' NO parece estar corriendo.")
+
+def main():
+    # 1. Asegurar que estamos en el directorio correcto
+    if os.path.exists(DIR_PROYECTO):
+        os.chdir(DIR_PROYECTO)
+    else:
+        log(f"❌ Error crítico: La ruta {DIR_PROYECTO} no existe.")
+        sys.exit(1)
+
+    # --- NUEVO: FASE DE AUTO-REPARACIÓN (WATCHDOG) ---
+    # Antes de buscar actualizaciones, verificamos que el servicio esté vivo
+    if not esta_corriendo():
+        log(f"⚠️ ALERTA: El contenedor '{NOMBRE_CONTENEDOR}' está DETENIDO o no existe.")
+        log("🚑 Iniciando protocolo de recuperación (Levantando servicio)...")
+        ejecutar_comando("docker-compose up -d")
+        # Si acabamos de levantarlo, quizás no necesitemos actualizar inmediatamente, 
+        # pero dejamos que el flujo continúe por si acaso la versión local era vieja.
+
+    # 2. Traer información de GitHub (sin descargar código aún)
+    # log("🔄 Buscando actualizaciones...")
     ejecutar_comando("git fetch origin")
 
-    # 2. Ver si hay diferencias entre mi local y el remoto
+    # 3. Comparar versión local vs remota
     estado_local = ejecutar_comando(f"git rev-parse {RAMA}")
     estado_remoto = ejecutar_comando(f"git rev-parse origin/{RAMA}")
 
-    if estado_local == estado_remoto:
-        print("✅ El sistema está actualizado. No es necesario desplegar.")
+    if not estado_local or not estado_remoto:
+        # Si falló git fetch, al menos nos aseguramos que el contenedor siga vivo con el código actual
+        if not esta_corriendo():
+             ejecutar_comando("docker-compose up -d")
         return
 
-    print("⚡ Se detectaron cambios. Iniciando despliegue...")
+    # Si son iguales, no hacemos nada (termina el script para ahorrar CPU)
+    if estado_local == estado_remoto:
+        # Descomenta la siguiente línea solo si quieres ver logs cada 30 seg
+        # log("✅ Sistema actualizado y corriendo.")
+        return
 
-    # 3. Descargar el código nuevo
-    print("⬇️  Descargando código (git pull)...")
+    # 4. Si llegamos aquí, ¡HAY CAMBIOS EN EL CÓDIGO!
+    log("⚡ DETECTADOS CAMBIOS EN GITHUB. INICIANDO DESPLIEGUE AUTOMÁTICO...")
+
+    # A) Descargar código
+    log(f"⬇️  Descargando últimos cambios de {RAMA}...")
     ejecutar_comando(f"git pull origin {RAMA}")
 
-    # 4. Reconstruir y levantar el contenedor (ESTA ES LA CLAVE)
-    # --build: Fuerza a crear la imagen nueva con el código nuevo
-    # -d: Lo deja corriendo en segundo plano
-    print("🐳 Reconstruyendo contenedor Docker...")
-    resultado_docker = ejecutar_comando("docker-compose up -d --build")
+    # B) Reconstruir Docker
+    log("🐳 Reconstruyendo y reiniciando contenedor...")
+    resultado_build = ejecutar_comando("docker-compose up -d --build")
     
-    if resultado_docker:
-        print("🚀 ¡Despliegue completado con éxito!")
+    if resultado_build:
+        log("🚀 Despliegue de Docker finalizado.")
         
-        # 5. (Opcional) Limpiar imágenes viejas para no llenar el disco
+        # C) Limpieza de imágenes viejas
         ejecutar_comando("docker image prune -f")
+        
+        # D) Verificación final
+        verificar_estado_contenedor()
     else:
-        print("⚠️ Hubo un problema al levantar Docker.")
+        log("🔥 ERROR CRÍTICO: Falló el docker-compose up. Revisa el código.")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        log(f"❌ Error inesperado en el script: {e}")
