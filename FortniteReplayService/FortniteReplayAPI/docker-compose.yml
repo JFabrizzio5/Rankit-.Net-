@@ -1,0 +1,14 @@
+services:
+  fortnite-replay-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: fortnite-replay-api-image
+    container_name: fortnite_replay_container
+    # Mapeo de puertos: [Puerto de tu PC]:[Puerto del contenedor]
+    # El Dockerfile expone el 8080, y tu launchSettings usa el 5138
+    ports:
+      - "5138:8080"  # <--- CORRIGE ESTO
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    restart: always
