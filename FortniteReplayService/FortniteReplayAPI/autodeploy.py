@@ -3,6 +3,13 @@ import os
 import sys
 import datetime
 
+# --- INSTRUCCIONES PARA CRONJOB (Cada 30 Segundos) ---
+# Ejecuta 'crontab -e' y agrega estas dos líneas al final:
+#
+# * * * * * cd /root/CometaXMicroservices/Rankit-.Net-/FortniteReplayService/FortniteReplayAPI && /usr/bin/python3 autodeploy.py >> deploy.log 2>&1
+# * * * * * sleep 30 && cd /root/CometaXMicroservices/Rankit-.Net-/FortniteReplayService/FortniteReplayAPI && /usr/bin/python3 autodeploy.py >> deploy.log 2>&1
+# -----------------------------------------------------
+
 # --- CONFIGURACIÓN ---
 
 # Rama que quieres vigilar (usualmente 'main' o 'master')
