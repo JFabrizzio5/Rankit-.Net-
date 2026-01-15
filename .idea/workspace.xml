@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="f69c546c-39a8-41b0-8549-ba07654ce593" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/Controllers/FortniteParserController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/Controllers/FortniteParserController.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/Models/ReplayModels.cs" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/Models/ReplayModels.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/Service/ReplayService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/Service/ReplayService.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/bin/Debug/net8.0/FortniteReplayAPI.dll" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/bin/Debug/net8.0/FortniteReplayAPI.dll" afterDir="false" />
@@ -69,7 +68,7 @@
       <option name="presentableId" value="Default" />
       <updated>1768188551170</updated>
       <workItem from="1768188552494" duration="609000" />
-      <workItem from="1768457072165" duration="233000" />
+      <workItem from="1768457072165" duration="1612000" />
     </task>
     <servers />
   </component>
