@@ -24,9 +24,6 @@ namespace FortniteReplayAPI.Services
             // 2. Mapear Jugadores y Equipos
             var playersDict = new Dictionary<string, MatchResult>(StringComparer.OrdinalIgnoreCase);
 
-            // Contador para verificar la calidad de los datos oficiales
-            int playersWithOfficialRank = 0;
-
             if (replay.PlayerData != null)
             {
                 foreach (var p in replay.PlayerData)
@@ -37,8 +34,8 @@ namespace FortniteReplayAPI.Services
 
                     if (!playersDict.ContainsKey(cleanId))
                     {
+                        // Intentamos leer el dato oficial ("Lo correcto")
                         int officialRank = p.Placement ?? 0;
-                        if (officialRank > 0) playersWithOfficialRank++;
 
                         // Corrección: TeamIndex nulo o -1 se convierte en equipo individual
                         int rawTeamId = p.TeamIndex ?? -1;
@@ -50,7 +47,7 @@ namespace FortniteReplayAPI.Services
                             PlayerName = string.IsNullOrEmpty(p.PlayerName) ? cleanId : p.PlayerName,
                             IsBot = p.IsBot,
                             TeamId = effectiveTeamId,
-                            Rank = officialRank > 0 ? officialRank : 999,
+                            Rank = officialRank, // Guardamos lo que venga, sea 0 o un valor real
                             Kills = 0,
                             Knocks = 0
                         };
@@ -74,7 +71,7 @@ namespace FortniteReplayAPI.Services
 
                     if (!string.IsNullOrEmpty(eliminatorId))
                     {
-                         // Guardamos el tiempo de última acción para desempate si sobreviven
+                         // Guardamos el tiempo de última acción para desempate
                          if (lastInteractionTime.ContainsKey(eliminatorId))
                          {
                              if (eventTime > lastInteractionTime[eliminatorId]) lastInteractionTime[eliminatorId] = eventTime;
@@ -100,7 +97,7 @@ namespace FortniteReplayAPI.Services
                         if (!playersDict.ContainsKey(victimId))
                         {
                             // Bot o jugador no registrado en PlayerData
-                            playersDict[victimId] = new MatchResult { Id = victimId, PlayerName = "Unknown", IsBot = true, TeamId = -1, Rank = 999 };
+                            playersDict[victimId] = new MatchResult { Id = victimId, PlayerName = "Unknown", IsBot = true, TeamId = -1, Rank = 0 };
                         }
 
                         deathOrder.Add(victimId);
@@ -114,94 +111,94 @@ namespace FortniteReplayAPI.Services
                 }
             }
 
-            // 4. CALCULAR RANKING POR EQUIPOS
+            // 4. CALCULAR RANKINGS (ESTRATEGIA HÍBRIDA)
+            // Calculamos SIEMPRE el ranking manual para tenerlo de respaldo.
+
             var teams = playersDict.Values
                 .GroupBy(x => x.TeamId)
                 .ToDictionary(g => g.Key, g => g.Select(p => p.Id).ToList());
 
-            int totalTeams = teams.Count;
-            int totalPlayers = playersDict.Count;
+            var activeTeams = new HashSet<int>(teams.Keys);
+            var deadPlayers = new HashSet<string>(deathOrder);
+            var wipedTeamsOrder = new List<int>();
 
-            // === DECISIÓN DE ESTRATEGIA ===
-            // Solo usamos los datos oficiales si MÁS DEL 50% de los jugadores tienen ranking.
-            // Esto evita el problema de tu JSON donde solo 1 tiene rank y el resto 999.
-            bool dataQualityIsGood = totalPlayers > 0 && ((double)playersWithOfficialRank / totalPlayers) > 0.5;
-
-            if (dataQualityIsGood)
+            // Lógica de descarte de equipos
+            foreach (var victimId in deathOrder)
             {
-                // ESTRATEGIA A: DATOS OFICIALES (Confiables)
-                foreach (var teamId in teams.Keys)
+                if (playersDict.TryGetValue(victimId, out var victim))
                 {
-                    var members = teams[teamId];
-                    var validRanks = members
-                        .Select(pid => playersDict[pid].Rank)
-                        .Where(r => r > 0 && r < 999)
-                        .ToList();
-
-                    int bestRank = validRanks.Any() ? validRanks.Min() : 999;
-                    SetTeamRank(playersDict, teamId, bestRank);
-                }
-            }
-            else
-            {
-                // ESTRATEGIA B: CÁLCULO MANUAL (Cuando falla el replay)
-                // Reconstruimos la historia de la partida.
-
-                var activeTeams = new HashSet<int>(teams.Keys);
-                var deadPlayers = new HashSet<string>(deathOrder);
-                var wipedTeamsOrder = new List<int>(); // Equipos eliminados totalmente
-
-                // Detectar equipos eliminados en orden cronológico
-                foreach (var victimId in deathOrder)
-                {
-                    if (playersDict.TryGetValue(victimId, out var victim))
+                    int tid = victim.TeamId;
+                    if (activeTeams.Contains(tid))
                     {
-                        int tid = victim.TeamId;
-                        if (activeTeams.Contains(tid))
+                        var members = teams[tid];
+                        if (members.All(mId => deadPlayers.Contains(mId)))
                         {
-                            var members = teams[tid];
-                            // Si todos los miembros murieron, el equipo está fuera
-                            if (members.All(mId => deadPlayers.Contains(mId)))
-                            {
-                                activeTeams.Remove(tid);
-                                wipedTeamsOrder.Add(tid);
-                            }
+                            activeTeams.Remove(tid);
+                            wipedTeamsOrder.Add(tid);
                         }
                     }
                 }
+            }
 
-                int currentRank = 1;
+            // Diccionario para guardar el Ranking Estimado (Manual)
+            var estimatedTeamRanks = new Dictionary<int, int>();
+            int currentRank = 1;
 
-                // 1. Equipos Vivos (Ganadores o supervivientes al corte del replay)
-                var sortedActiveTeams = activeTeams
-                    .Select(tid => new
-                    {
-                        TeamId = tid,
-                        // Bonus enorme si este equipo hizo la última kill (muy probable ganador)
-                        CausedLastKill = !string.IsNullOrEmpty(lastKillerId) && teams[tid].Contains(lastKillerId),
-                        // Desempate por tiempo de actividad
-                        LastActionTime = teams[tid].Max(pid => lastInteractionTime.ContainsKey(pid) ? lastInteractionTime[pid] : 0f),
-                        // Desempate por kills totales
-                        TeamTotalKills = teams[tid].Sum(pid => playersDict.ContainsKey(pid) ? playersDict[pid].Kills : 0)
-                    })
-                    .OrderByDescending(t => t.CausedLastKill)
-                    .ThenByDescending(t => t.TeamTotalKills) // Priorizar Kills para desempatar ganadores
-                    .ThenByDescending(t => t.LastActionTime)
+            // 1. Equipos Vivos
+            var sortedActiveTeams = activeTeams
+                .Select(tid => new
+                {
+                    TeamId = tid,
+                    CausedLastKill = !string.IsNullOrEmpty(lastKillerId) && teams[tid].Contains(lastKillerId),
+                    LastActionTime = teams[tid].Max(pid => lastInteractionTime.ContainsKey(pid) ? lastInteractionTime[pid] : 0f),
+                    TeamTotalKills = teams[tid].Sum(pid => playersDict.ContainsKey(pid) ? playersDict[pid].Kills : 0)
+                })
+                .OrderByDescending(t => t.CausedLastKill)
+                .ThenByDescending(t => t.TeamTotalKills)
+                .ThenByDescending(t => t.LastActionTime)
+                .ToList();
+
+            foreach (var activeTeam in sortedActiveTeams)
+            {
+                estimatedTeamRanks[activeTeam.TeamId] = currentRank;
+                currentRank++;
+            }
+
+            // 2. Equipos Eliminados
+            wipedTeamsOrder.Reverse();
+            foreach (var wipedTeamId in wipedTeamsOrder)
+            {
+                estimatedTeamRanks[wipedTeamId] = currentRank;
+                currentRank++;
+            }
+
+            // === ASIGNACIÓN FINAL (HYBRID MERGE) ===
+            int totalTeams = teams.Count;
+
+            foreach (var teamId in teams.Keys)
+            {
+                // Buscamos si ALGUIEN del equipo tiene un rank oficial válido
+                var members = teams[teamId];
+                var validOfficialRanks = members
+                    .Select(pid => playersDict[pid].Rank)
+                    .Where(r => r > 0 && r < 999)
                     .ToList();
 
-                foreach (var activeTeam in sortedActiveTeams)
+                int finalRank;
+
+                if (validOfficialRanks.Any())
                 {
-                    SetTeamRank(playersDict, activeTeam.TeamId, currentRank);
-                    currentRank++;
+                    // Si el archivo TIENE el dato ("de neta"), lo usamos con prioridad.
+                    finalRank = validOfficialRanks.Min();
+                }
+                else
+                {
+                    // Si no, usamos el cálculo manual que hicimos arriba
+                    finalRank = estimatedTeamRanks.ContainsKey(teamId) ? estimatedTeamRanks[teamId] : 999;
                 }
 
-                // 2. Equipos Eliminados (El último en morir tiene mejor rank)
-                wipedTeamsOrder.Reverse();
-                foreach (var wipedTeamId in wipedTeamsOrder)
-                {
-                    SetTeamRank(playersDict, wipedTeamId, currentRank);
-                    currentRank++;
-                }
+                // Asignamos el rank final a todos los miembros
+                SetTeamRank(playersDict, teamId, finalRank);
             }
 
             // 5. CALCULAR PUNTOS
@@ -213,9 +210,8 @@ namespace FortniteReplayAPI.Services
 
                 int rawPlacementPoints = 0;
 
-                // Corrección de seguridad: Si después de todo el rank sigue siendo 999,
-                // lo tratamos como último lugar para no dar puntos negativos.
-                int safeRank = (player.Rank > 900) ? totalTeams : player.Rank;
+                // Si el rank sigue siendo 999 o 0 (muy raro con la lógica híbrida), lo ponemos al final
+                int safeRank = (player.Rank <= 0 || player.Rank > 900) ? totalTeams : player.Rank;
 
                 if (rules.UseLinearPlacement)
                 {
