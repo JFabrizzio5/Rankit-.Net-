@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="f69c546c-39a8-41b0-8549-ba07654ce593" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/Models/ReplayModels.cs" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/Models/ReplayModels.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/Service/ReplayService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/Service/ReplayService.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/bin/Debug/net8.0/FortniteReplayAPI.dll" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/bin/Debug/net8.0/FortniteReplayAPI.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/bin/Debug/net8.0/FortniteReplayAPI.exe" beforeDir="false" afterPath="$PROJECT_DIR$/FortniteReplayService/FortniteReplayAPI/bin/Debug/net8.0/FortniteReplayAPI.exe" afterDir="false" />
@@ -38,19 +37,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "ajustes",
+    "kotlin-language-version-configured": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -69,6 +68,7 @@
       <updated>1768188551170</updated>
       <workItem from="1768188552494" duration="609000" />
       <workItem from="1768457072165" duration="1612000" />
+      <workItem from="1769371145221" duration="600000" />
     </task>
     <servers />
   </component>
