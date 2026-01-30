@@ -26,10 +26,8 @@ namespace FortniteReplayAPI.Models
         public bool IsBot { get; set; }
         public int TeamId { get; set; }
 
-        // --- RANKINGS ---
-        public int Rank { get; set; }            // Posición de Supervivencia (Top # en el juego)
-        public int LeaderboardRank { get; set; } // <--- NUEVO: Posición en la Tabla por Puntos
-        // ----------------
+        public int Rank { get; set; }
+        public int LeaderboardRank { get; set; }
 
         public int Kills { get; set; }
         public int Knocks { get; set; }
@@ -37,7 +35,6 @@ namespace FortniteReplayAPI.Models
         public bool IsWinner { get; set; }
         public string? EliminatedBy { get; set; }
 
-        // Puntos desglosados
         public int KillPoints { get; set; }
         public int PlacementPoints { get; set; }
         public int TotalPoints { get; set; }
@@ -47,11 +44,8 @@ namespace FortniteReplayAPI.Models
     public class TeamMatchResult
     {
         public int TeamId { get; set; }
-
-        // --- RANKINGS ---
-        public int Rank { get; set; }            // Posición de Supervivencia (Top # en el juego)
-        public int LeaderboardRank { get; set; } // <--- NUEVO: Posición en la Tabla por Puntos
-        // ----------------
+        public int Rank { get; set; }
+        public int LeaderboardRank { get; set; }
 
         public List<string> MemberNames { get; set; } = new();
         public bool IsWinner { get; set; }
@@ -59,7 +53,6 @@ namespace FortniteReplayAPI.Models
         public int TotalKills { get; set; }
         public int TotalKnocks { get; set; }
 
-        // Puntos desglosados
         public int KillPoints { get; set; }
         public int PlacementPoints { get; set; }
         public int TotalPoints { get; set; }
@@ -85,18 +78,15 @@ namespace FortniteReplayAPI.Models
         public int TeamId { get; set; }
         public List<string> MemberNames { get; set; } = new();
 
-        // Estadísticas acumuladas
         public int MatchesPlayed { get; set; }
         public int Wins { get; set; }
         public int TotalKills { get; set; }
         public int TotalKnocks { get; set; }
 
-        // Puntos acumulados desglosados
         public int PlacementPoints { get; set; }
         public int KillPoints { get; set; }
         public int TotalPoints { get; set; }
 
-        // Promedios
         public double AverageRank { get; set; }
         public double AverageKills { get; set; }
         public double AverageKnocks { get; set; }
@@ -107,40 +97,53 @@ namespace FortniteReplayAPI.Models
         public string Id { get; set; } = string.Empty;
         public string PlayerName { get; set; } = string.Empty;
 
-        // Estadísticas acumuladas
         public int MatchesPlayed { get; set; }
         public int Wins { get; set; }
         public int TotalKills { get; set; }
         public int TotalKnocks { get; set; }
 
-        // Puntos acumulados desglosados
         public int PlacementPoints { get; set; }
         public int KillPoints { get; set; }
         public int TotalPoints { get; set; }
 
-        // Promedios
         public double AverageRank { get; set; }
         public double AverageKills { get; set; }
         public double AverageKnocks { get; set; }
     }
 
     // ==========================================
-    // REGLAS DE PUNTUACIÓN
+    // MODELO DE RESUMEN INDEPENDIENTE (NUEVO)
     // ==========================================
+
+    public class ReplaySummaryResponse
+    {
+        public string MatchId { get; set; } = string.Empty;
+        public string ReplayOwnerName { get; set; } = string.Empty;
+
+        // Estadísticas del dueño de la replay
+        public int Rank { get; set; }
+        public int Kills { get; set; }
+        public int Knocks { get; set; }
+        public bool IsWinner { get; set; }
+        public float? DeathTime { get; set; } // Tiempo exacto de muerte
+        public string? EliminatedBy { get; set; }
+
+        public string Message { get; set; } = string.Empty;
+    }
 
     public class ScoringRules
     {
         public int PointsPerKill { get; set; } = 1;
-        public bool UseLinearPlacement { get; set; } = true; 
-        public int WinBonus { get; set; } = 5; 
+        public bool UseLinearPlacement { get; set; } = true;
+        public int WinBonus { get; set; } = 5;
         public List<PlacementThreshold>? Thresholds { get; set; }
         public List<PlacementRange>? Ranges { get; set; }
     }
 
     public class PlacementThreshold
     {
-        public int ThresholdRank { get; set; } 
-        public int Points { get; set; }        
+        public int ThresholdRank { get; set; }
+        public int Points { get; set; }
     }
 
     public class PlacementRange
