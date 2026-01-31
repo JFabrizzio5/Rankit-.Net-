@@ -13,113 +13,121 @@ namespace FortniteReplayAPI.Services
             _logger = logger;
         }
 
-        // --- MÉTODO CORREGIDO: Lógica para el Resumen ---
-        public ReplaySummaryResponse GetReplaySummary(string filePath)
+public ReplaySummaryResponse GetReplaySummary(string filePath)
+{
+    var reader = new ReplayReader(_logger);
+    var replay = reader.ReadReplay(filePath);
+
+    if (replay == null) throw new Exception("No se pudo leer el archivo .replay");
+
+    // 1. MATCH ID
+    string matchId = replay.GameData?.GameSessionId ?? "UnknownSession";
+
+    // 2. IDENTIFICAR AL DUEÑO
+    var ownerData = replay.PlayerData?.FirstOrDefault(p => p.IsReplayOwner);
+    if (ownerData == null)
+    {
+        // Fallback: MVP no bot
+        ownerData = replay.PlayerData?
+            .Where(p => !p.IsBot)
+            .OrderByDescending(p => p.Kills)
+            .FirstOrDefault();
+    }
+
+    if (ownerData == null) throw new Exception("No se pudo identificar al jugador dueño.");
+
+    string ownerId = ownerData.EpicId ?? "";
+    string ownerName = ownerData.PlayerName ?? "Unknown";
+    int ownerTeamId = ownerData.TeamIndex ?? -1;
+
+    // 3. CALCULAR KILLS (LÓGICA MEJORADA)
+    // Prioridad 1: Usar replay.Stats (Estadísticas oficiales de fin de partida)
+    int finalKills = 0;
+
+    if (replay.Stats != null)
+    {
+        finalKills = (int)replay.Stats.Eliminations;
+    }
+    else
+    {
+        // Prioridad 2: Contar manualmente desde la lista de eventos (Más fiable que PlayerData)
+        // Contamos eventos donde TÚ eres el eliminador y NO es un Knock
+        if (replay.Eliminations != null)
         {
-            var reader = new ReplayReader(_logger);
-            var replay = reader.ReadReplay(filePath);
-
-            if (replay == null) throw new Exception("No se pudo leer el archivo .replay");
-
-            // 1. MATCH ID
-            string matchId = replay.GameData?.GameSessionId ?? "UnknownSession";
-
-            // 2. CREAR DICCIONARIO DE NOMBRES (ID -> Nombre)
-            // Esto es crucial para traducir el "EliminatedBy" de ID a Nombre legible
-            var playerNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            if (replay.PlayerData != null)
-            {
-                foreach (var p in replay.PlayerData)
-                {
-                    if (!string.IsNullOrEmpty(p.EpicId) && !string.IsNullOrEmpty(p.PlayerName))
-                    {
-                        playerNames[p.EpicId.Trim()] = p.PlayerName;
-                    }
-                }
-            }
-
-            // 3. IDENTIFICAR AL DUEÑO (Lógica Mejorada)
-            // En replays locales, usualmente SOLO el dueño tiene 'Placement' registrado en AthenaMatchStats.
-            // Buscamos primero alguien con Placement > 0 y que no sea Bot.
-            var ownerData = replay.PlayerData?.FirstOrDefault(p => !p.IsBot && (p.Placement ?? 0) > 0);
-
-            // Si falla, buscamos al jugador con más kills (heurística de fallback) o el primero humano
-            if (ownerData == null)
-            {
-                ownerData = replay.PlayerData?.OrderByDescending(p => p.Kills).FirstOrDefault(p => !p.IsBot);
-            }
-
-            // Si todo falla, tomamos el primero
-            if (ownerData == null) ownerData = replay.PlayerData?.FirstOrDefault();
-
-            // Datos del dueño
-            string ownerName = ownerData?.PlayerName ?? "Unknown";
-            string? ownerId = ownerData?.EpicId;
-
-            // 4. ESTADÍSTICAS
-            int rank = (int)(ownerData?.Placement ?? 0);
-            int kills = (int)(ownerData?.Kills ?? 0);
-
-            int knocks = 0;
-            float? deathTime = null;
-            string? eliminatedById = null;
-            string? eliminatedByName = null;
-            bool isWinner = (rank == 1);
-
-            if (replay.Eliminations != null && !string.IsNullOrEmpty(ownerId))
-            {
-                foreach (var elim in replay.Eliminations)
-                {
-                    string? eliminator = elim.Eliminator?.Trim();
-                    string? victim = elim.Eliminated?.Trim();
-                    bool isKnock = elim.Knocked;
-
-                    // Si el dueño eliminó a alguien (knock)
-                    if (!string.IsNullOrEmpty(eliminator) && eliminator.Equals(ownerId, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (isKnock) knocks++;
-                        // Las kills ya las tomamos de ownerData (oficiales), pero si ownerData.Kills es 0 y aquí hay datos, actualizamos
-                        else if (kills == 0) kills++;
-                    }
-
-                    // Si el dueño fue la víctima (Muerte definitiva)
-                    if (!string.IsNullOrEmpty(victim) && victim.Equals(ownerId, StringComparison.OrdinalIgnoreCase) && !isKnock)
-                    {
-                        deathTime = ParseTime(elim.Time);
-                        eliminatedById = eliminator; // Guardamos ID para buscar nombre después
-                    }
-                }
-            }
-
-            // 5. RESOLVER NOMBRE DEL ASESINO
-            if (!string.IsNullOrEmpty(eliminatedById))
-            {
-                if (playerNames.TryGetValue(eliminatedById, out string? nameFound))
-                {
-                    eliminatedByName = nameFound;
-                }
-                else
-                {
-                    // Si no encontramos el nombre, devolvemos el ID o "Unknown"
-                    eliminatedByName = eliminatedById;
-                }
-            }
-
-            return new ReplaySummaryResponse
-            {
-                MatchId = matchId,
-                ReplayOwnerName = ownerName,
-                Rank = rank,
-                Kills = kills,
-                Knocks = knocks,
-                IsWinner = isWinner,
-                DeathTime = deathTime,
-                EliminatedBy = eliminatedByName, // Ahora devuelve el nombre real si existe
-                Message = ownerData != null ? "Datos extraídos correctamente." : "No se detectaron estadísticas oficiales en la replay."
-            };
+            finalKills = replay.Eliminations.Count(e => e.Eliminator == ownerId && !e.Knocked);
         }
+        else
+        {
+            // Fallback final: PlayerData (puede ser inexacto con bots)
+            finalKills = (int)(ownerData.Kills ?? 0);
+        }
+    }
 
-        // --- MÉTODO ORIGINAL: Lógica de análisis completo ---
+    // 4. CALCULAR KNOCKS
+    int ownerKnocks = 0;
+    if (replay.Eliminations != null)
+    {
+        ownerKnocks = replay.Eliminations.Count(e => e.Eliminator == ownerId && e.Knocked);
+    }
+
+    // 5. OBTENER RANK
+    int finalRank = (int)(replay.TeamStats?.Position ?? (uint)(ownerData.Placement ?? 0));
+
+    // 6. EQUIPO Y MODO
+    var teamMembers = replay.PlayerData?
+        .Where(p => p.TeamIndex == ownerTeamId && !string.IsNullOrEmpty(p.EpicId))
+        .ToList() ?? new();
+
+    string gameMode = "Solos";
+    if (teamMembers.Count == 2) gameMode = "Duos";
+    else if (teamMembers.Count == 3) gameMode = "Trios";
+    else if (teamMembers.Count >= 4) gameMode = "Squads";
+
+    // 7. TEAMMATES
+    var teammatesSummary = new List<TeammateSummary>();
+    foreach (var member in teamMembers)
+    {
+        if (member.EpicId != ownerId)
+        {
+            teammatesSummary.Add(new TeammateSummary
+            {
+                PlayerName = member.PlayerName ?? "Unknown",
+                Kills = (int)(member.Kills ?? 0),
+                IsBot = member.IsBot
+            });
+        }
+    }
+
+    // 8. MUERTE
+    float? deathTime = null;
+    string? eliminatedBy = null;
+    if (replay.Eliminations != null)
+    {
+        var deathEvent = replay.Eliminations.FirstOrDefault(e => e.Eliminated == ownerId && !e.Knocked);
+        if (deathEvent != null)
+        {
+            deathTime = ParseTime(deathEvent.Time);
+            eliminatedBy = replay.PlayerData?.FirstOrDefault(p => p.EpicId == deathEvent.Eliminator)?.PlayerName ?? "Enemigo/Zona";
+        }
+    }
+
+    return new ReplaySummaryResponse
+    {
+        MatchId = matchId,
+        ReplayOwnerName = ownerName,
+        Mode = gameMode,
+        Rank = finalRank,
+        Kills = finalKills,  // Usamos el cálculo mejorado
+        Knocks = ownerKnocks,
+        IsWinner = (finalRank == 1),
+        DeathTime = deathTime,
+        EliminatedBy = eliminatedBy,
+        Teammates = teammatesSummary,
+        Message = "Datos extraídos correctamente."
+    };
+}
+
+        // --- MÉTODO ORIGINAL: Lógica de análisis completo (Manteniendo código existente) ---
         public MatchAnalysisResponse ProcessReplay(string filePath, ScoringRules rules, GameMode mode)
         {
             var reader = new ReplayReader(_logger);

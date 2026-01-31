@@ -112,13 +112,16 @@ namespace FortniteReplayAPI.Models
     }
 
     // ==========================================
-    // MODELO DE RESUMEN INDEPENDIENTE (NUEVO)
+    // MODELO DE RESUMEN INDEPENDIENTE (CORREGIDO)
     // ==========================================
 
     public class ReplaySummaryResponse
     {
         public string MatchId { get; set; } = string.Empty;
         public string ReplayOwnerName { get; set; } = string.Empty;
+
+        // Muestra el modo detectado (Solos, Duos, Trios, Squads)
+        public string Mode { get; set; } = "Solos";
 
         // Estadísticas del dueño de la replay
         public int Rank { get; set; }
@@ -128,7 +131,17 @@ namespace FortniteReplayAPI.Models
         public float? DeathTime { get; set; } // Tiempo exacto de muerte
         public string? EliminatedBy { get; set; }
 
+        // Lista de compañeros de equipo con sus stats
+        public List<TeammateSummary> Teammates { get; set; } = new();
+
         public string Message { get; set; } = string.Empty;
+    }
+
+    public class TeammateSummary
+    {
+        public string PlayerName { get; set; } = string.Empty;
+        public int Kills { get; set; }
+        public bool IsBot { get; set; }
     }
 
     public class ScoringRules
